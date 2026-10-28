@@ -38,15 +38,15 @@ body{background:var(--night);color:var(--cream);font-family:var(--f-body);font-s
   box-shadow:0 0 0 1px rgba(198,107,255,.25) inset,0 0 30px rgba(255,140,70,.45),0 0 80px rgba(160,90,255,.4);animation:introFloat 4.2s ease-in-out infinite;-webkit-tap-highlight-color:transparent}
 .intro-q{display:flex;flex-direction:column;font-family:var(--f-display);font-weight:700;font-size:clamp(34px,6vw,58px);line-height:1;color:#fff3d6;
   text-shadow:0 0 6px #ffc94a,0 0 18px #ff9a3c,0 0 40px #ff7a59,0 0 70px rgba(160,90,255,.8);animation:introGlow 2.6s ease-in-out infinite}
-/* one-time hint after the intro: how to open a project */
-.hint{position:absolute;left:50%;top:42%;z-index:55;max-width:min(440px,calc(100% - 32px));transform:translate(-50%,-50%);pointer-events:none;
-  display:flex;align-items:center;gap:10px;padding:12px 20px;border-radius:18px;font-family:var(--f-body);font-weight:700;font-size:17px;line-height:1.35;text-align:center;
-  color:var(--cream);background:rgba(20,14,44,.86);border:1px solid rgba(255,201,74,.55);box-shadow:0 0 0 1px rgba(255,201,74,.15),0 0 26px rgba(255,201,74,.35);
-  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0;transition:opacity .5s ease;animation:hintFloat 2.6s ease-in-out infinite}
+/* one-time hint after the intro: a small floating line and a pointing hand on the Tzameret house */
+.hint{position:absolute;left:0;top:0;z-index:55;pointer-events:none;display:grid;justify-items:center;gap:2px;opacity:0;transition:opacity .45s ease;will-change:transform}
 .hint.on{opacity:1}
-.hint i{font-style:normal;font-size:22px}
-@keyframes hintFloat{50%{translate:0 -7px}}
-@media (prefers-reduced-motion:reduce){.hint{animation:none}}
+.hint .hand{font-size:30px;line-height:1;filter:drop-shadow(0 0 8px rgba(255,201,74,.75));animation:handTap 1.1s ease-in-out infinite}
+.hint .say{font-family:var(--f-body);font-weight:700;font-size:15px;white-space:nowrap;color:var(--cream);
+  text-shadow:0 0 10px rgba(255,201,74,.85),0 0 22px rgba(255,201,74,.45),0 1px 2px rgba(0,0,0,.8);animation:hintFloat 2.6s ease-in-out infinite}
+@keyframes handTap{0%,100%{transform:translateY(6px)}45%{transform:translateY(-2px) scale(.92)}}
+@keyframes hintFloat{50%{translate:0 -4px}}
+@media (prefers-reduced-motion:reduce){.hint .hand,.hint .say{animation:none}}
 .intro-go{font-family:var(--f-body);font-weight:700;font-size:clamp(18px,2.8vw,24px);color:#1a0f30;padding:10px 28px;border-radius:99px;
   background:linear-gradient(90deg,#ffc94a,#ff7a59 60%,#c66bff);box-shadow:0 0 20px rgba(255,150,70,.7),0 0 50px rgba(170,90,255,.45);transition:transform .2s}
 .intro-msg:hover .intro-go,.intro-msg:focus-visible .intro-go{transform:scale(1.06)}
@@ -302,7 +302,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
       <span class="intro-go">בוא נצא לדרך!</span>
     </button>
   </div>
-  <div class="hint" id="hint" role="status" hidden><i aria-hidden="true">👆</i><span>לוחצים על בית או על פרויקט ברשימה, והוא נפתח</span></div>
+  <div class="hint" id="hint" role="status" hidden><span class="hand" aria-hidden="true">👆</span><span class="say">לוחצים על בית כדי לפתוח פרויקט</span></div>
   <div id="scan" aria-hidden="true"></div>
   <div id="labels"></div>
 
@@ -723,6 +723,8 @@ function placeLabels(){
     const w = l.w*sc, h = l.h*sc; let x = p.x - w/2, y = p.y - h - 6;
     for (let pass=0; pass<3; pass++) for (const q of placed){ if (x < q.x+q.w+4 && x+w+4 > q.x && y < q.y+q.h+3 && y+h+3 > q.y) y = q.y - h - 4; }
     placed.push({x, y, w, h}); l.el.style.transformOrigin = '0 0'; l.el.style.transform = `translate(${x}px,${y}px) scale(${sc})`; });
+  if (hintOn){ const h = document.getElementById('hint'), q = proj(projWorld.tzameret.clone().setY(0.6));
+    h.classList.toggle('on', q.ok); h.style.transform = `translate(${Math.round(q.x)}px,${Math.round(q.y + 8)}px) translateX(-50%)`; }
 }
 
 /* ---------- UI ---------- */
@@ -760,17 +762,22 @@ function flyOverview(){ const s = view(); flyTo(new THREE.Vector3(14,0,4), new T
 
 const cardEl = $('#card');
 const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-// shown once per browser, right after the intro; leaves on the first opened project or after 9 s
-let hintSeen = false;
+// shown once per browser, right after the intro: a hand points at the Tzameret house (placed in placeLabels);
+// it leaves on the first tap or key, on the first opened project, or after 8 s
+let hintSeen = false, hintOn = false;
 try { hintSeen = localStorage.getItem('cityHintSeen') === '1'; } catch (e) {}
 function showHint(){
   const h = document.getElementById('hint'); if (!h || hintSeen) return;
   hintSeen = true; try { localStorage.setItem('cityHintSeen', '1'); } catch (e) {}
-  setTimeout(() => { h.hidden = false; void h.offsetWidth; h.classList.add('on'); setTimeout(hideHint, 9000); }, 1100);
+  setTimeout(() => {
+    h.hidden = false; hintOn = true;
+    ['pointerdown', 'keydown', 'wheel'].forEach(ev => addEventListener(ev, hideHint, {once: true, capture: true}));
+    setTimeout(hideHint, 8000);
+  }, 1200);
 }
 function hideHint(){
-  const h = document.getElementById('hint'); if (!h || h.hidden) return;
-  h.classList.remove('on'); setTimeout(() => { h.hidden = true; }, 500);
+  const h = document.getElementById('hint'); if (!h || !hintOn) return;
+  hintOn = false; h.classList.remove('on'); setTimeout(() => { h.hidden = true; }, 500);
 }
 function openCard(id){
   hideHint();
@@ -849,7 +856,7 @@ function tickTour(dt){
   const now = performance.now();
   if (!tour){ if (!introOn && !reduce && cardEl.hidden && document.getElementById('mini').hidden && !playing && now - lastInput > IDLE_MS) startTour(); return; }
   t += (tour.target - t) * Math.min(1, dt*1.5); syncSlider();
-  if (now > tour.until) tourStep();
+  if (now > tour.until && !hintOn) tourStep();   // the tour waits on Tzameret while the hint points at it
 }
 
 /* ---------- camera: moves on a sphere around the target, with a crane lift mid-flight ---------- */
@@ -1488,8 +1495,9 @@ if (M.wanted){ music.start(); syncMusicBtn(); }
     if (!reduce) burst(cx, cy);
     msg.classList.add('pop'); box.classList.add('gone');
     setTimeout(() => { box.hidden = true; }, 850);
-    introOn = false; lastInput = performance.now(); startTour();
-    showHint();
+    introOn = false; lastInput = performance.now();
+    if (!hintSeen) tourAt = tourOrder.findIndex(p => p.key === 'tzameret');   // the first stop is the house the hint points at
+    startTour(); showHint();
   });
   msg.focus({preventScroll: true});
 })();
