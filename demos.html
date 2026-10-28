@@ -32,6 +32,8 @@ nav{display:grid;gap:10px;margin:22px 0 18px}
 .stage h2{margin:0;font-family:var(--f-display);font-size:42px;font-weight:700;line-height:.9;color:var(--sc)}
 .stage .lead{margin:6px 0 16px;color:var(--muted);max-width:70ch}
 video{display:block;width:100%;aspect-ratio:16/9;border-radius:14px;background:#0b0b10}
+.cta{display:inline-block;margin-top:14px;padding:10px 18px;border-radius:99px;background:#25d366;color:#08311a;font-weight:800;text-decoration:none}
+.cta:hover{filter:brightness(1.08)}
 .note{margin:12px 0 0;font-size:13px;color:var(--muted)}
 @media (max-width:600px){ header h1{font-size:44px} .stage{padding:14px} .stage h2{font-size:34px} }
 </style></head><body>
@@ -58,7 +60,7 @@ const DEMOS = {
     ultra:{title:'צמרת אולטרה', lead:'כרטיס תלמיד ויומן שיעורים בתוך צמרת: התראות על תוקף בדיקות מברוש, קביעת שיעור ורישום שיעור שבוצע.'},
   }},
   bot:{label:'בוטים', color:'#ff7a59', items:{
-    melave:{title:'עמית, בוט המלווה', lead:'מלווה בוואטסאפ לבניית שכבת ההקשר וסוכני AI, צעד אחד בכל פעם לפי תוכנית הלימודים. הזיכרון מגודר: לכל משתמש תיק משלו.'},
+    melave:{title:'עמית, בוט המלווה', lead:'מלווה בוואטסאפ לבניית שכבת ההקשר וסוכני AI, צעד אחד בכל פעם לפי תוכנית הלימודים. הזיכרון מגודר: לכל משתמש תיק משלו.', cta:{label:'לשיחה אמיתית עם עמית בוואטסאפ · חינם ↗', url:'https://wa.me/972539560143'}},
     inzobot:{title:'אינזו-בוט', lead:'עוזר ההפקה של אינזואגדה בקבוצת הוואטסאפ: עונה רק כשמתייגים אותו, מתוך מסמכי הדרייב שמסתנכרנים כל 20 דקות.'},
     watchdog:{title:'שומר הבוטים', lead:'משימה מתוזמנת שבודקת את הבוטים כל 5 דקות, מרימה בוט שנפל ומתריעה בוואטסאפ דרך הבוט שחי.'},
     lectures:{title:'בוט תוכן למרצים', lead:'מרצה מעלה שיעור, הבוט מפיק ב-NotebookLM חומרי לימוד, שולח מייל, והמרצה מאשר לפני הפרסום לתלמידים.'},
@@ -88,6 +90,7 @@ function show(k){
   const v = document.createElement('video'); v.controls = true; v.muted = true; v.loop = true; v.autoplay = true; v.playsInline = true; v.setAttribute('playsinline', ''); v.preload = 'auto';
   v.poster = `videos/${k}.jpg`; v.src = `videos/${k}.mp4`;
   stage.append(h, p, v); v.play().catch(() => {});
+  if (d.cta){ const c = document.createElement('a'); c.className = 'cta'; c.href = d.cta.url; c.target = '_blank'; c.rel = 'noopener noreferrer'; c.textContent = d.cta.label; stage.append(c); }
 }
 addEventListener('hashchange', () => show(location.hash.slice(1)));
 show((location.hash || '').slice(1));
