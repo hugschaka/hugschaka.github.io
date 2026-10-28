@@ -725,7 +725,8 @@ function placeLabels(){
     for (let pass=0; pass<3; pass++) for (const q of placed){ if (x < q.x+q.w+4 && x+w+4 > q.x && y < q.y+q.h+3 && y+h+3 > q.y) y = q.y - h - 4; }
     placed.push({x, y, w, h}); l.el.style.transformOrigin = '0 0'; l.el.style.transform = `translate(${x}px,${y}px) scale(${sc})`; });
   if (hintOn){ const h = document.getElementById('hint'), q = proj(projWorld.tzameret.clone().setY(0.6));
-    h.classList.toggle('on', q.ok); h.style.transform = `translate(${Math.round(q.x)}px,${Math.round(q.y + 8)}px) translateX(-50%)`; }
+    const x = q.ok ? q.x : W / 2, y = q.ok ? q.y + 8 : H * 0.42;   // off screen: it waits in the middle
+    h.classList.add('on'); h.style.transform = `translate(${Math.round(Math.max(110, Math.min(W - 110, x)))}px,${Math.round(Math.min(H - 190, y))}px) translateX(-50%)`; }
 }
 
 /* ---------- UI ---------- */
@@ -765,14 +766,16 @@ const cardEl = $('#card');
 const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 // shown once per browser, right after the intro: a hand points at the Tzameret house (placed in placeLabels);
 // it leaves on the first tap or key, on the first opened project, or after 8 s
-let hintSeen = false, hintOn = false;
-try { hintSeen = localStorage.getItem('cityHintSeen2') === '1'; } catch (e) {}
+let hintSeen = false, hintOn = false, hintT0 = 0;
+try { hintSeen = localStorage.getItem('cityHintSeen3') === '1'; } catch (e) {}
 function showHint(){
   const h = document.getElementById('hint'); if (!h || hintSeen) return;
-  hintSeen = true; try { localStorage.setItem('cityHintSeen2', '1'); } catch (e) {}
+  hintSeen = true; try { localStorage.setItem('cityHintSeen3', '1'); } catch (e) {}
   setTimeout(() => {
-    h.hidden = false; hintOn = true;
-    ['pointerdown', 'keydown', 'wheel'].forEach(ev => addEventListener(ev, hideHint, {once: true, capture: true}));
+    h.hidden = false; hintOn = true; hintT0 = performance.now();
+    const early = () => performance.now() - hintT0 < 3000;   // a touch right after it appears doesn't count
+    const off = () => { if (early()) return; ['pointerdown', 'keydown', 'wheel'].forEach(ev => removeEventListener(ev, off, true)); hideHint(); };
+    ['pointerdown', 'keydown', 'wheel'].forEach(ev => addEventListener(ev, off, true));
     setTimeout(hideHint, 9000);
   }, 1800);
 }
