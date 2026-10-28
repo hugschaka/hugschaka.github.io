@@ -767,7 +767,7 @@ const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','
 // shown once per browser, right after the intro: a hand points at the Tzameret house (placed in placeLabels);
 // it leaves on the first tap or key, on the first opened project, or after 8 s
 let hintSeen = false, hintOn = false, hintT0 = 0;
-try { hintSeen = localStorage.getItem('cityHintSeen3') === '1'; } catch (e) {}
+try { hintSeen = localStorage.getItem('cityHintSeen4') === '1'; } catch (e) {}
 function showHint(){
   const h = document.getElementById('hint'); if (!h || hintSeen) return;
   hintSeen = true;
@@ -777,7 +777,7 @@ function showHint(){
     if (!arrived()) return;
     clearInterval(wait);
     h.hidden = false; hintOn = true; hintT0 = performance.now();
-    try { localStorage.setItem('cityHintSeen3', '1'); } catch (e) {}   // counted as seen only once it really showed
+    try { localStorage.setItem('cityHintSeen4', '1'); } catch (e) {}   // counted as seen only once it really showed
     const early = () => performance.now() - hintT0 < 3000;   // a touch right after it appears doesn't count
     const off = () => { if (early()) return; ['pointerdown', 'keydown', 'wheel'].forEach(ev => removeEventListener(ev, off, true)); hideHint(); };
     ['pointerdown', 'keydown', 'wheel'].forEach(ev => addEventListener(ev, off, true));
