@@ -254,6 +254,11 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 .mini-stage.k-tzameret,.mini-stage.k-motion,.mini-stage.k-motionbiz{padding:0;height:auto;aspect-ratio:16/9}
 .mv,.mr{width:100%;height:100%;display:block;object-fit:contain;background:#0b0b10}
 .mini-stage.vid{padding:0;height:auto;aspect-ratio:16/9}
+/* the project's demo video plays inside the card, under the description */
+.cvid{margin:12px 0 4px}
+.cvid video{display:block;width:100%;aspect-ratio:16/9;border-radius:12px;background:#0b0b10;border:1px solid var(--line)}
+.cvid a{display:inline-block;margin-top:6px;font-size:13px;color:var(--muted);text-decoration:none}
+.cvid a:hover{color:var(--cream)}
 @media (min-width:861px){ .mini:has(.mini-stage.vid),.mini:has(.k-tzameret){width:min(560px,42vw)} }
 .mw{display:flex;flex-direction:column;min-height:0;flex:1}
 .mw-head{display:flex;align-items:center;gap:8px;padding:6px 8px;background:#1f2c34;border-radius:10px}
@@ -303,7 +308,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
       <span class="intro-go">בוא נצא לדרך!</span>
     </button>
   </div>
-  <div class="hint" id="hint" role="status" hidden><svg class="hand" viewBox="0 0 64 84" width="44" height="58" aria-hidden="true"><g fill="#fff" stroke="#1d1533" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><rect x="21" y="3" width="14" height="44" rx="7"/><path d="M13 42q0-9 9-9h22q11 0 11 11v10q0 17-19 17h-6q-17 0-17-17z"/><rect x="33" y="29" width="12" height="17" rx="6"/><rect x="43" y="33" width="11" height="15" rx="5.5"/><path d="M16 47q-11-5-11 3q0 9 13 12"/><rect x="15" y="66" width="36" height="15" rx="5"/></g><path d="M21 71h24M21 76h24" stroke="#cfc8e6" stroke-width="2" stroke-linecap="round"/></svg><span class="say">לוחצים על בית כדי לפתוח פרויקט</span></div>
+  <div class="hint" id="hint" role="status" hidden><svg class="hand" viewBox="0 0 64 84" width="44" height="58" aria-hidden="true"><g fill="#fff" stroke="#1d1533" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><rect x="25" y="3" width="14" height="44" rx="7"/><rect x="37" y="30" width="10" height="15" rx="5"/><rect x="45" y="33" width="10" height="15" rx="5"/><path d="M13 45q0-12 12-12h19q11 0 11 11v12q0 16-18 16h-6q-18 0-18-16z"/><path d="M14 47q-8-1-8 6q0 7 10 8"/><rect x="15" y="66" width="36" height="15" rx="5"/></g><path d="M27 49v11M34 48v13M41 49v11" stroke="#1d1533" stroke-width="2.6" stroke-linecap="round"/><path d="M21 71h24M21 76h24" stroke="#cfc8e6" stroke-width="2" stroke-linecap="round"/></svg><span class="say">לוחצים על בית כדי לפתוח פרויקט</span></div>
   <div id="scan" aria-hidden="true"></div>
   <div id="labels"></div>
 
@@ -332,6 +337,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
     <p class="sub" id="cTag"></p>
     <div class="meta"><span id="cState" class="pill"></span><span id="cWhen"></span></div>
     <div class="desc" id="cDesc"></div>
+    <div class="cvid" id="cVid" hidden></div>
     <ul class="stack" id="cStack"></ul>
     <p class="price" id="cPrice" hidden></p>
     <div class="views" id="cViews"></div>
@@ -767,21 +773,21 @@ const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','
 // shown once per browser, right after the intro: a hand points at the Tzameret house (placed in placeLabels);
 // it leaves on the first tap or key, on the first opened project, or after 8 s
 let hintSeen = false, hintOn = false, hintT0 = 0;
-try { hintSeen = localStorage.getItem('cityHintSeen4') === '1'; } catch (e) {}
+try { hintSeen = localStorage.getItem('cityHintSeen5') === '1'; } catch (e) {}
 function showHint(){
   const h = document.getElementById('hint'); if (!h || hintSeen) return;
   hintSeen = true;
-  const arrived = () => tour && tourOrder[tour.i] && tourOrder[tour.i].key === 'tzameret' && performance.now() > tour.until - 5800 + 2600;
+  const arrived = () => cardEl.hidden && tour && tourOrder[tour.i] && tourOrder[tour.i].key === 'tzameret' && performance.now() > tour.until - 5800 + 2600;
   const wait = setInterval(() => {
     if (!tour && !introOn){ clearInterval(wait); return; }   // the visitor took over before the tour got there
     if (!arrived()) return;
     clearInterval(wait);
     h.hidden = false; hintOn = true; hintT0 = performance.now();
-    try { localStorage.setItem('cityHintSeen4', '1'); } catch (e) {}   // counted as seen only once it really showed
+    try { localStorage.setItem('cityHintSeen5', '1'); } catch (e) {}   // counted as seen only once it really showed
     const early = () => performance.now() - hintT0 < 3000;   // a touch right after it appears doesn't count
     const off = () => { if (early()) return; ['pointerdown', 'keydown', 'wheel'].forEach(ev => removeEventListener(ev, off, true)); hideHint(); };
     ['pointerdown', 'keydown', 'wheel'].forEach(ev => addEventListener(ev, off, true));
-    setTimeout(hideHint, 9000);
+    setTimeout(hideHint, 3000);
   }, 200);
 }
 function hideHint(){
@@ -798,7 +804,14 @@ function openCard(id){
   $('#cDesc').innerHTML = p.desc.split('\n').map(x => `<p>${esc(x)}</p>`).join('');
   $('#cStack').innerHTML = p.stack.map(x => `<li>${esc(x)}</li>`).join('');
   $('#cPrice').hidden = !p.price; $('#cPrice').textContent = p.price || '';
-  $('#cViews').innerHTML = p.view.map((v, i) => v.mini ? `<button class="go" data-mini="${i}" style="border:0;cursor:pointer">▶ ${esc(v.label)}</button>`
+  // a demo with a real video plays right here instead of behind a button
+  const vi = p.view.findIndex(v => v.mini && CARD_VIDS.includes(v.mini)), cv = $('#cVid');
+  cv.innerHTML = ''; cv.hidden = vi < 0;
+  if (vi >= 0){ const k = p.view[vi].mini, v = document.createElement('video');
+    v.muted = true; v.loop = true; v.autoplay = true; v.playsInline = true; v.setAttribute('playsinline', ''); v.preload = 'auto';
+    v.poster = `videos/${k}.jpg`; v.src = `videos/${k}.mp4`; const a = document.createElement('a'); a.href = `demos.html#${k}`; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'לפתוח בגדול ↗';
+    cv.append(v, a); v.play().catch(() => {}); try { mini.close(); } catch (e) {} }
+  $('#cViews').innerHTML = p.view.map((v, i) => i === vi ? '' : v.mini ? `<button class="go" data-mini="${i}" style="border:0;cursor:pointer">▶ ${esc(v.label)}</button>`
     : v.action ? `<button class="go" data-act="${i}" style="border:0;cursor:pointer">${esc(v.label)} 🎛</button>` : `<a class="go" href="${v.url}" target="_blank" rel="noopener noreferrer">${esc(v.label)} ↗</a>`).join('');
   $('#cViews').querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); if (p.view[+b.dataset.act].action === 'music'){ closeCard(); window.openMusicConsole(); } }));
   $('#cViews').querySelectorAll('[data-mini]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); const v = p.view[+b.dataset.mini]; mini.open(v.mini, p.name, v.url); }));
@@ -816,7 +829,8 @@ function openCard(id){
   const s = view(); flyTo(projWorld[p.key].clone(), new THREE.Vector3().setFromSphericalCoords(30*s, 0.95, Math.atan2(-5, 23)), 1900);
   if (t < p.t){ t = p.t; syncSlider(); }
 }
-function closeCard(){ cardEl.hidden = true; cardId = null; listEl.querySelectorAll('.row.sel').forEach(r => r.classList.remove('sel')); }
+const CARD_VIDS = ['tzameret','server','phones','ops','ultra','melave','inzobot','watchdog','lectures','bizbots','motion','motionbiz'];
+function closeCard(){ cardEl.hidden = true; cardId = null; $('#cVid').innerHTML = ''; listEl.querySelectorAll('.row.sel').forEach(r => r.classList.remove('sel')); }
 const expandCard = () => { cardEl.classList.add('open'); cardEl.style.transform = ''; };
 cardEl.addEventListener('click', e => { if (!cardEl.classList.contains('open') && !e.target.closest('.x')) expandCard(); });
 $('#cardClose').addEventListener('click', e => { e.stopPropagation(); closeCard(); curDist ? flyToDist(curDist) : flyOverview(); });
