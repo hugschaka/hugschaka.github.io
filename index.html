@@ -770,10 +770,9 @@ function flyOverview(){ const s = view(); flyTo(new THREE.Vector3(14,0,4), new T
 
 const cardEl = $('#card');
 const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-// shown once per browser, right after the intro: a hand points at the Tzameret house (placed in placeLabels);
+// shown on every visit, once the tour reaches Tzameret after the intro: a hand points at the Tzameret house (placed in placeLabels);
 // it leaves on the first tap or key, on the first opened project, or after 8 s
 let hintSeen = false, hintOn = false, hintT0 = 0;
-try { hintSeen = localStorage.getItem('cityHintSeen7') === '1'; } catch (e) {}
 function showHint(){
   const h = document.getElementById('hint'); if (!h || hintSeen) return;
   hintSeen = true;
@@ -783,7 +782,6 @@ function showHint(){
     if (!arrived()) return;
     clearInterval(wait);
     h.hidden = false; hintOn = true; hintT0 = performance.now();
-    try { localStorage.setItem('cityHintSeen7', '1'); } catch (e) {}   // counted as seen only once it really showed
     const early = () => performance.now() - hintT0 < 3000;   // a touch right after it appears doesn't count
     const off = () => { if (early()) return; ['pointerdown', 'keydown', 'wheel'].forEach(ev => removeEventListener(ev, off, true)); hideHint(); };
     ['pointerdown', 'keydown', 'wheel'].forEach(ev => addEventListener(ev, off, true));
