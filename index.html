@@ -776,7 +776,15 @@ let hintSeen = false, hintOn = false, hintT0 = 0;
 function showHint(){
   const h = document.getElementById('hint'); if (!h || hintSeen) return;
   hintSeen = true;
-  const arrived = () => cardEl.hidden && tour && tourOrder[tour.i] && tourOrder[tour.i].key === 'tzameret' && performance.now() > tour.until - 5800 + 2600;
+  // arrived = the camera has really landed on the Tzameret house (flight over), and has rested there 1.5 s
+  let landed = 0;
+  const arrived = () => {
+    if (!(cardEl.hidden && tour && tourOrder[tour.i] && tourOrder[tour.i].key === 'tzameret')) return false;
+    const now = performance.now(), there = controls.target.distanceTo(projWorld.tzameret.clone().setY(3)) < 0.5 && (!fly || now > fly.s + fly.dur);
+    if (!there){ landed = 0; return false; }
+    if (!landed) landed = now;
+    return now - landed > 1500;
+  };
   const wait = setInterval(() => {
     if (!tour && !introOn){ clearInterval(wait); return; }   // the visitor took over before the tour got there
     if (!arrived()) return;
