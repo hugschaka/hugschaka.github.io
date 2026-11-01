@@ -1136,16 +1136,16 @@ function frame(){
    Each band plays live on its own clock, with a small timing and velocity spread, and changes its arrangement
    every pass through the 8-bar tune; switching the day crossfades to that neighborhood's band.
      nh  folk band in the spirit of עולמה: D freygish bulgar, accordion oom-pah, frame drum and darbuka; violin, then violin + flute, then the accordion takes the tune
-     vt  courtyard song: G major, nylon guitar fingerpicking, upright bass; piano melody, then cajón and shaker join, then the violin sings it over piano chords
-     dr  Yemenite-Mizrahi groove: A harmonic minor, darbuka maqsum, guitar ostinato; clarinet, then clarinet + flute, then a rhythm break */
+     vt  Mizrahi: maqam hijaz on E, darbuka baladi, off-beat guitar chords; violin, then violin + clarinet, then a darbuka break
+     dr  Yemenite-Mizrahi groove: A harmonic minor, darbuka maqsum, guitar ostinato; clarinet, then clarinet + flute, then a darbuka break */
 const M = {theme:DAYS[0].hood, wanted:true, volume:0.9};
 const music = (() => {
   const AUD = 'inzoagda/audio/';
-  const NOTES = {bass:'C2 E2 Ab2 C3 E3', guitar:'E2 Ab2 C3 E3 Ab3 C4 E4 Ab4 C5', piano:'C2 E2 Ab2 C3 E3 Ab3 C4 E4 Ab4 C5 E5 Ab5 C6',
+  const NOTES = {bass:'C2 E2 Ab2 C3 E3', guitar:'E2 Ab2 C3 E3 Ab3 C4 E4 Ab4 C5',
     accordion:'C3 E3 Ab3 C4 E4 Ab4 C5', violin:'C4 E4 Ab4 C5 E5 Ab5 C6', clarinet:'E3 Ab3 C4 E4 Ab4 C5 E5 Ab5', flute:'C5 E5 Ab5 C6 E6'};
   const USE = {nh:['bass','accordion','violin','flute','frameL','tek1','tek2','ka','tambShake'],
-    vt:['guitar','bass','piano','cajonB','cajonS','cajonG','shakD','shakU','violin'],
-    dr:['bass','guitar','clarinet','doum','tek1','tek2','ka','frameL','tambHit','flute']};
+    vt:['doum','tek1','tek2','ka','slap','tambHit','bass','guitar','violin','clarinet'],
+    dr:['doum','tek1','tek2','ka','slap','frameL','tambHit','bass','guitar','clarinet','flute']};
   const PC = {C:0, D:2, E:4, F:5, G:7, A:9, B:11};
   const midi = n => { const m = /^([A-G])([#b]?)(\d)$/.exec(n); return PC[m[1]] + (m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0) + 12 * (+m[3] + 1); };
   // one string per bar, "note.length" in sixteenths ("r" = rest) → [[step, midi, length]]
@@ -1174,39 +1174,46 @@ const music = (() => {
         }
         if (L === 2 && s === 0) note('violin', c.v[2] + 12, t, sp * 15, .15, bus, .3, {attack:.25, release:.3});   // long notes under the accordion
       }},
-    vt:{bpm:84, chords:['G','Bm','Em','C','Am','D','G','D'],
-      tune:tune(['B4.4 D5.4 G5.6 F#5.2', 'F#5.4 D5.4 B4.8', 'E5.6 F#5.2 G5.4 E5.4', 'E5.4 D5.4 C5.8',
-        'C5.4 E5.4 A5.6 G5.2', 'F#5.6 E5.2 D5.8', 'B4.4 C5.2 D5.2 G5.4 B4.4', 'A4.12 r.4']),
-      play(st, t, bus, sp){ const L = pass(st), bar = barOf(st), s = st & 15, c = CH[this.chords[bar]], v = c.v;
-        // fingerpicked nylon guitar in eighths
-        if (!(s & 1)) note('guitar', [c.r + 12, v[1], v[2], v[1], v[0] + 12, v[2], v[1] + 12, v[2]][s >> 1], t, 1.6, s === 0 ? .4 : .26, bus, -.3);
-        if (s === 0) note('bass', c.r, t, sp * 7, .55, bus);
-        if (s === 8) note('bass', c.f, t, sp * 7, .45, bus);
-        if (L >= 1){ if (s === 0 || s === 10) hit('cajonB', t, .5, bus, .15); if (s === 4 || s === 12) hit('cajonS', t, .3, bus, .15);
-          if (s === 7 || s === 15) hit('cajonG', t, .12, bus, .15); if (!(s & 1)) hit(s & 2 ? 'shakU' : 'shakD', t, .1, bus, -.2); }
-        if (L === 2 && s === 0) v.forEach(m => note('piano', m, t, 2, .14, bus, .15));
-        for (const [at, m, len] of this.tune[bar]) if (at === s){
-          if (L === 2) note('violin', m, t, sp * len * .95, .36, bus, .3, {attack:.05, scoop:len >= 4});
-          else note('piano', m, t, Math.max(1.2, sp * len), .5, bus, .15);
+    vt:{bpm:96, chords:['E','E','Dm','E','Am','Dm','E','E'], scale:[64,65,68,69,71,72,74,76,77,80,81],
+      tune:tune(['E4.2 F4.2 G#4.2 A4.2 B4.6 A4.2', 'G#4.2 A4.2 G#4.2 F4.2 E4.8', 'D5.4 C5.2 B4.2 A4.4 F4.4', 'G#4.2 A4.2 B4.4 C5.2 B4.2 A4.4',
+        'A4.2 B4.2 C5.4 E5.4 D5.2 C5.2', 'D5.4 F5.2 E5.2 D5.2 C5.2 B4.2 A4.2', 'G#4.2 A4.2 B4.2 A4.2 G#4.2 F4.2 G#4.2 A4.2', 'E4.12 r.4']),
+      play(st, t, bus, sp){ const L = pass(st), bar = barOf(st), s = st & 15, c = CH[this.chords[bar]];
+        // darbuka baladi: doum doum . tek doum . tek ., with the drummer's ka strokes in between
+        if (s === 0 || s === 2 || s === 8) hit('doum', t, s === 0 ? .62 : .5, bus, .2);
+        if (s === 6 || s === 12) hit(s === 6 ? 'tek1' : 'tek2', t, .4, bus, .25);
+        if (s === 4 || s === 10 || s === 14) hit('ka', t, .15, bus, .25);
+        if (s === 5 || s === 13 || (L === 2 && (s & 1))) hit('ka', t, .08, bus, .25);
+        if (s === 14 && (bar & 1)) hit('slap', t, .3, bus, .25);
+        if (bar === 7 && s >= 8) hit(s & 1 ? 'tek2' : 'tek1', t, .18 + (s - 8) * .04, bus, .25);   // the roll into the next round
+        if (s === 4 || s === 12) hit('tambHit', t, .1, bus, -.25);
+        // bass on the doums, guitar chords on the off-beats
+        if (s === 0 || s === 2) note('bass', c.r, t, sp * 1.6, s ? .45 : .6, bus); if (s === 8) note('bass', c.f, t, sp * 3, .5, bus);
+        if (s === 2 || s === 6 || s === 10 || s === 14) c.v.concat(c.v[0] + 12).forEach((m, i) => note('guitar', m, t + i * .006, .35, .16, bus, -.3));
+        if (L !== 2) for (const [at, m, len] of this.tune[bar]) if (at === s){
+          lead('violin', m, t, len, sp, .44, bus, .3, this.scale);
+          if (L === 1) note('clarinet', m - 12, t, sp * len * .95, .24, bus, -.15, {attack:.02});
         }
       }},
-    dr:{bpm:100, chords:['Am','Am','Dm','Am','E','E','Am','Am'],
+    dr:{bpm:104, chords:['Am','Am','Dm','Am','E','E','Am','Am'], scale:[64,68,69,71,72,74,76,77,80,81],
       riff:{Am:[57,56,57,60,59,57,56,57], Dm:[62,60,62,65,64,62,60,62], E:[56,57,59,60,59,57,56,52]},
       tune:tune(['E5.6 F5.2 E5.2 D5.2 C5.2 B4.2', 'C5.4 B4.2 A4.2 G#4.4 A4.4', 'D5.4 F5.4 E5.2 D5.2 C5.4', 'B4.2 C5.2 D5.2 C5.2 B4.2 A4.6',
         'G#4.4 B4.4 E5.6 D5.2', 'C5.2 D5.2 E5.4 F5.2 E5.2 D5.2 C5.2', 'B4.4 A4.2 G#4.2 A4.4 C5.2 B4.2', 'A4.12 r.4']),
       play(st, t, bus, sp){ const L = pass(st), bar = barOf(st), s = st & 15, ch = this.chords[bar], c = CH[ch];
         // darbuka maqsum: doum tek . tek doum . tek .
-        if (s === 0 || s === 8) hit('doum', t, s ? .42 : .55, bus, .2);
-        if (s === 2 || s === 6 || s === 12) hit(s === 6 ? 'tek2' : 'tek1', t, .3, bus, .25);
-        if (s === 4 || s === 10 || s === 14 || (L === 2 && (s & 1))) hit('ka', t, L === 2 && (s & 1) ? .08 : .12, bus, .25);   // the break: the drummer fills in sixteenths
-        if (bar === 7 && s >= 12) hit(s & 1 ? 'tek2' : 'tek1', t, .22 + (s - 12) * .07, bus, .25);
-        if (s === 0 || s === 8) hit('frameL', t, .22, bus, -.1);
+        if (s === 0 || s === 8) hit('doum', t, s ? .5 : .62, bus, .2);
+        if (s === 2 || s === 6 || s === 12) hit(s === 6 ? 'tek2' : 'tek1', t, .4, bus, .25);
+        if (s === 4 || s === 10 || s === 14) hit('ka', t, .15, bus, .25);
+        if (s === 3 || s === 11 || (L === 2 && (s & 1))) hit('ka', t, .08, bus, .25);   // the break: the drummer fills in sixteenths
+        if (L === 2 && (s === 5 || s === 13)) hit('tek2', t, .22, bus, .25);
+        if (s === 14 && (bar & 1)) hit('slap', t, .3, bus, .25);
+        if ((bar === 3 || bar === 7) && s >= 12) hit(s & 1 ? 'tek2' : 'tek1', t, .22 + (s - 12) * .07, bus, .25);
+        if (s === 0 || s === 8) hit('frameL', t, .18, bus, -.1);
         if (s === 4 || s === 12) hit('tambHit', t, .08, bus, -.25);
         if (s === 0) note('bass', c.r, t, sp * 3.5, .6, bus); if (s === 6) note('bass', c.r, t, sp * 1.6, .45, bus);
         if (s === 8) note('bass', c.f, t, sp * 3.5, .5, bus); if (s === 14) note('bass', c.r, t, sp * 1.6, .4, bus);
         if (!(s & 1)) note('guitar', this.riff[ch][s >> 1], t, .5, L === 2 ? .38 : .26, bus, -.3);
         if (L !== 2) for (const [at, m, len] of this.tune[bar]) if (at === s){
-          note('clarinet', m, t, sp * len * .95, .44, bus, .25, {attack:.02, scoop:len >= 4});
+          lead('clarinet', m, t, len, sp, .44, bus, .25, this.scale);
           if (L === 1) note('flute', m + 12, t, sp * len * .9, .2, bus, -.1, {attack:.03});
         }
       }},
@@ -1233,6 +1240,14 @@ const music = (() => {
     const at = o.attack || .006, end = t + Math.max(len, at + .02), rel = o.release || .14;
     g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vel, t + at); g.gain.setValueAtTime(vel, end); g.gain.linearRampToValueAtTime(0, end + rel);
     src.connect(g); out(g, pan, bus); src.start(t); src.stop(end + rel + .02);
+  }
+  // a Mizrahi lead: long notes sometimes open with a quick turn to the scale tone above
+  function lead(inst, m, t, len, sp, vel, bus, pan, scale){
+    const up = scale.find(x => x > m);
+    if (len >= 4 && up && Math.random() < .6){
+      note(inst, m, t, sp * .45, vel, bus, pan, {attack:.015, release:.04}); note(inst, up, t + sp * .5, sp * .4, vel * .85, bus, pan, {attack:.01, release:.04});
+      note(inst, m, t + sp, sp * (len - 1) * .95, vel, bus, pan, {attack:.02});
+    } else note(inst, m, t, sp * len * .95, vel, bus, pan, {attack:.02, scoop:len >= 4});
   }
   function hit(name, t, vel, bus, pan = 0){
     const b = B[name]; if (!b) return;
