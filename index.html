@@ -1570,4 +1570,13 @@ requestAnimationFrame(frame);
 })();
 </script>
 
+<script>
+/* view counter: one anonymous count per visit (per browser tab session), only a number per page per day in Supabase.
+   No cookies, no IP, no device details. Counts are read in the Supabase dashboard (table page_views). */
+(() => { const PAGE = 'city';
+  try { if (sessionStorage.getItem('counted-' + PAGE)) return; sessionStorage.setItem('counted-' + PAGE, '1'); } catch (e) {}
+  fetch('https://bzivvgzqugptgtbqffzg.supabase.co/rest/v1/rpc/count_view', {method:'POST', keepalive:true,
+    headers:{apikey:'sb_publishable_4ZopjP_HcJZ4PybIgzYNFA_JIZQEEsD', 'Content-Type':'application/json'}, body:JSON.stringify({p:PAGE})}).catch(() => {});
+})();
+</script>
 </body></html>
