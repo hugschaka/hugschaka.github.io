@@ -319,7 +319,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
   <header class="top">
     <div class="brand">
       <h1>העיר של דניאל<small>2026</small></h1>
-      <p class="tag"><b>מערכות, בוטים, תרבות ואנימציה.</b> כל בית במפה הוא פרויקט אמיתי.</p>
+      <p class="tag"><b>מערכות, בוטים, תרבות, אנימציה ומשחקים.</b> כל בית במפה הוא פרויקט אמיתי.</p>
     </div>
     <nav class="days" id="days" role="tablist" aria-label="שכונות"></nav>
   </header>
@@ -418,8 +418,10 @@ const DIST = {
     {n:'Three.js', a:[-15,-2], b:[15,-2], main:true}, {n:'הגינה הקהילתית', a:[4,-15], b:[4,15]}, {n:'', a:[-15,8], b:[15,8]}]},
   anim:{name:'אנימציה וסאונד', css:'#c58bff', col:0xc58bff, c:[40,50], streets:[
     {n:'Playwright', a:[-15,-2], b:[15,-2], main:true}, {n:'ffmpeg', a:[4,-15], b:[4,15]}, {n:'Strudel', a:[-15,8], b:[15,8]}]},
+  games:{name:'עיר המשחקים', css:'#5dff8a', col:0x5dff8a, c:[38,-44], streets:[
+    {n:'Vercel', a:[-15,-2], b:[15,-2], main:true}, {n:'Google Play', a:[4,-15], b:[4,15]}, {n:'App Store', a:[-15,8], b:[15,8]}]},
 };
-const ORDER = ['sys','bot','culture','anim'];
+const ORDER = ['sys','bot','culture','anim','games'];
 const STATUS = {secret:'מסווג', prod:'בייצור', active:'פעיל', build:'בבנייה', service:'שירות', community:'קהילה', book:'ספר'};
 const P = (key, d, name, tag, status, when, whenLabel, p, x) => Object.assign({key, d, name, tag, status, when, whenLabel, p, size:'md', bo:[0,-3.4], stack:[], view:[], desc:''}, x);
 const PROJECTS = [
@@ -487,6 +489,10 @@ const PROJECTS = [
     view:[{label:'צפייה בהדמיה', mini:'motionbiz', url:'demos.html#motionbiz'}],kiosk:true, stack:['Motion Studio'],
     price:'15 שניות: 1,000 ₪ · 30 שניות: 1,450 ₪ (לא כולל מע״מ)',
     desc:`סרטוני מושן גרפיקס קצרים לעסקים: פתיח, הסבר על מוצר או מודעה לרשתות. כולל שלושה סבבי תיקונים של טקסט או צבע.`}),
+
+  P('fakeorreel','games','Fake or Reel','אמיתי או AI? מנחשים מסרטונים קצרים','active','2026-10-31','אוקטובר 2026',[-5,1.5], {size:'lg', bo:[0,3.4], stack:['Web','Vercel'],
+    view:[{label:'לשחק עכשיו', url:'https://real-or-ai-danielrozner11-6225s-projects.vercel.app'}, {label:'רוצה לבנות משחקים ואוטומציות? לחץ כאן לתיאום פגישה', url:'https://cal.com/danielrozner/build?utm_source=fake-or-reel'}],
+    desc:`משחק שבו צופים בסרטונים קצרים ומנחשים אם הם אמיתיים או AI.\nבקרוב יעלה לגוגל פליי ולאפסטור.`}),
 ];
 const LINKS = [
   ['tzameret','server','מעבירה תשלומים לשרת'], ['server','phones','אותו שרת'], ['tzameret','ops','מדווחת ליומן'],
@@ -1133,12 +1139,13 @@ const DIMS = {
   bot:{top:0x14020a, mid:0x3c0820, hor:0x90183c, sun:0xff3d5a, fog:0x2c0716, hemi:0xd04a6c, sea:0xa02848, bloom:1.2, stars:0.35},
   culture:{top:0x1a0a06, mid:0x5a2614, hor:0xff9548, sun:0xffc070, fog:0x48200f, hemi:0xffaa6a, sea:0xff8a50, bloom:0.95, stars:0.4},
   anim:{top:0x0b0322, mid:0x3a0d66, hor:0xc23fb4, sun:0x6ae8ff, fog:0x260a46, hemi:0xb27cff, sea:0x9a5ae8, bloom:1.1, stars:1},
+  games:{top:0x020f08, mid:0x06301a, hor:0x1c8a4a, sun:0x5dff8a, fog:0x062414, hemi:0x5ad88a, sea:0x2a9a5a, bloom:1.05, stars:0.7},
 };
 const skyMesh = scene.children.find(o => o.material && o.material.uniforms && o.material.uniforms.uTop);
 const hemiL = scene.children.find(o => o.isHemisphereLight);
 const starsP = scene.children.find(o => o.isPoints && o.material.sizeAttenuation === false);
 const bloomPass = composer ? composer.passes.find(p => p.strength !== undefined) : null;
-let dimKey = 'night'; const dimW = {night:1, sys:0, bot:0, culture:0, anim:0};
+let dimKey = 'night'; const dimW = {night:1, sys:0, bot:0, culture:0, anim:0, games:0};
 const cur = {top:C(DIMS.night.top), mid:C(DIMS.night.mid), hor:C(DIMS.night.hor), sun:C(DIMS.night.sun), fog:C(DIMS.night.fog), hemi:C(DIMS.night.hemi), sea:C(DIMS.night.sea), bloom:0.9, stars:0.85};
 function setAtmos(k){ dimKey = k && DIMS[k] ? k : 'night'; }
 const tmpC = new THREE.Color();
